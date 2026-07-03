@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Portfolio Review AI — IncomeAIHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  /* ─── TOKENS ─────────────────────────────────────────────── */
+  :root {
+    --bg:        #0A0E1A;
+    --surface:   #111827;
+    --card:      #1A2035;
+    --border:    #252d42;
+    --gold:      #F5B731;
+    --gold-dim:  #c4901e;
+    --emerald:   #10B981;
+    --violet:    #8B5CF6;
+    --rose:      #F43F5E;
+    --sky:       #38BDF8;
+    --text:      #E8EDF5;
+    --muted:     #8896a4;
+    --faint:     #2a3348;
+    --radius:    14px;
+    --radius-sm: 8px;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --display: 'Syne', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─────────────────────────────────────────────── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: 12px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.3px;
+    color: var(--text);
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    font-size: 16px;
+  }
+  .logo span { color: var(--gold); }
+  .header-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gold);
+    background: rgba(245,183,49,.12);
+    border: 1px solid rgba(245,183,49,.25);
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: .4px;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .api-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .2s;
+    background: transparent;
+    white-space: nowrap;
+  }
+  .api-badge:hover { border-color: var(--gold); color: var(--gold); }
+  .api-badge.connected { border-color: var(--emerald); color: var(--emerald); }
+
+  /* ─── LAYOUT ─────────────────────────────────────────────── */
+  .app {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    min-height: calc(100vh - 65px);
+  }
+
+  /* ─── SIDEBAR ─────────────────────────────────────────────── */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    overflow-y: auto;
+    max-height: calc(100vh - 65px);
+    position: sticky;
+    top: 65px;
+  }
+  .sidebar-title {
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sidebar-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: .2px;
+  }
+  input[type=text], input[type=password], textarea, select {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color .2s;
+    resize: none;
+  }
+  input[type=text]:focus, input[type=password]:focus,
+  textarea:focus, select:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(245,183,49,.08);
+  }
+  select option { background: var(--card); }
+  textarea { min-height: 120px; }
+
+  .field { display: flex; flex-direction: column; }
+
+  /* portfolio type chips */
+  .type-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: transparent;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .chip:hover { border-color: var(--gold); color: var(--gold); }
+  .chip.active { border-color: var(--gold); color: var(--bg); background: var(--gold); }
+
+  /* file upload */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 22px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    background: transparent;
+  }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--gold); background: rgba(245,183,49,.04); }
+  .upload-zone input { display: none; }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-label { font-size: 13px; color: var(--muted); }
+  .upload-label strong { color: var(--gold); }
+  .file-list { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+  .file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background: var(--faint);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .file-item button {
+    background: none;
+    border: none;
+    color: var(--rose);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0 2px;
+  }
+
+  /* review button */
+  .btn-review {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+    color: #0A0E1A;
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: .3px;
+    transition: opacity .2s, transform .1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-review:hover { opacity: .9; transform: translateY(-1px); }
+  .btn-review:active { transform: translateY(0); }
+  .btn-review:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .btn-outline {
+    width: 100%;
+    padding: 11px;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--sans);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-outline:hover { border-color: var(--text); color: var(--text); }
+
+  /* ─── MAIN PANEL ─────────────────────────────────────────── */
+  .main {
+    padding: 32px 36px;
+    overflow-y: auto;
+    max-height: calc(100vh - 65px);
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  /* hero / empty state */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 20px;
+    gap: 16px;
+  }
+  .empty-hero {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(245,183,49,.15), rgba(139,92,246,.15));
+    display: grid;
+    place-items: center;
+    font-size: 40px;
+    margin-bottom: 8px;
+    animation: pulse 3s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(245,183,49,.2); }
+    50% { box-shadow: 0 0 0 20px rgba(245,183,49,0); }
+  }
+  .empty-state h2 {
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--text) 40%, var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .empty-state p { color: var(--muted); max-width: 420px; font-size: 15px; }
+  .feature-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  .feature-pill {
+    padding: 7px 16px;
+    border-radius: 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* score radar wrapper */
+  .scores-row {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+    align-items: center;
+  }
+  canvas#radar { width: 100%; }
+
+  .score-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .score-bar-item { display: flex; flex-direction: column; gap: 5px; }
+  .score-bar-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .score-bar-label { color: var(--muted); font-weight: 500; }
+  .score-bar-val { font-family: var(--mono); font-weight: 500; }
+  .bar-track {
+    height: 6px;
+    background: var(--faint);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1.2s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+
+  /* section card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .card-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .card-title {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .card-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+  /* overall score ring */
+  .score-ring-wrap {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+  .score-ring {
+    position: relative;
+    width: 120px; height: 120px;
+    flex-shrink: 0;
+  }
+  .score-ring svg { transform: rotate(-90deg); }
+  .ring-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+  }
+  .ring-num {
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .ring-text { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .score-meta { flex: 1; min-width: 180px; }
+  .score-grade {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .score-verdict { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+  /* highlights grid */
+  .highlights {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+  }
+  .highlight-item {
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .hi-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+  .hi-text { font-size: 13px; line-height: 1.5; }
+
+  /* review text */
+  .review-body {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #c8d0dc;
+  }
+  .review-body h3 {
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 20px 0 8px;
+  }
+  .review-body p { margin-bottom: 12px; }
+  .review-body ul { padding-left: 20px; }
+  .review-body li { margin-bottom: 8px; }
+  .review-body strong { color: var(--gold); font-weight: 600; }
+
+  /* suggestions */
+  .suggestion-list { display: flex; flex-direction: column; gap: 12px; }
+  .suggestion-item {
+    display: flex;
+    gap: 14px;
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    align-items: flex-start;
+  }
+  .suggestion-num {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--gold);
+    font-weight: 500;
+    padding-top: 2px;
+    flex-shrink: 0;
+  }
+  .suggestion-text { font-size: 13px; line-height: 1.6; }
+  .suggestion-tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-right: 6px;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+
+  /* loading animation */
+  .loading-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 60px 20px;
+  }
+  .loading-ring {
+    width: 60px; height: 60px;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-steps { display: flex; flex-direction: column; gap: 8px; }
+  .loading-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--muted);
+    transition: color .3s;
+  }
+  .loading-step.active { color: var(--gold); }
+  .loading-step.done { color: var(--emerald); }
+  .step-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background .3s;
+    flex-shrink: 0;
+  }
+  .loading-step.active .step-dot { background: var(--gold); animation: blink 1s ease-in-out infinite; }
+  .loading-step.done .step-dot { background: var(--emerald); }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* streaming cursor */
+  .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: var(--gold);
+    margin-left: 2px;
+    vertical-align: middle;
+    animation: blink-cursor .7s step-end infinite;
+  }
+  @keyframes blink-cursor { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* api modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    display: grid;
+    place-items: center;
+    z-index: 999;
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    width: 90%;
+    max-width: 440px;
+    transform: translateY(20px);
+    transition: transform .2s;
+  }
+  .modal-overlay.show .modal { transform: translateY(0); }
+  .modal h3 {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .modal p { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+  .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-primary {
+    flex: 1;
+    padding: 11px;
+    background: var(--gold);
+    color: #0A0E1A;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: var(--display);
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .btn-secondary {
+    padding: 11px 18px;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .api-note {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text);
+    z-index: 9999;
+    transform: translateY(80px);
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 320px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  }
+  .toast.show { transform: translateY(0); }
+
+  /* export btn */
+  .export-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .btn-export {
+    padding: 9px 18px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .2s;
+  }
+  .btn-export:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ─── RESPONSIVE ─────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { position: relative; top: 0; max-height: none; border-right: none; border-bottom: 1px solid var(--border); }
+    .main { padding: 24px 20px; max-height: none; }
+    .scores-row { grid-template-columns: 1fr; }
+    canvas#radar { max-width: 220px; margin: 0 auto; display: block; }
+    header { padding: 14px 20px; }
+    .header-tag { display: none; }
+  }
+  @media (max-width: 500px) {
+    .highlights { grid-template-columns: 1fr; }
+    .score-ring-wrap { flex-direction: column; align-items: flex-start; }
+    .main { padding: 18px 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+
+  /* ─── ADENSE PLACEHOLDER ─────────────────────────────────── */
+  .ad-slot {
+    width: 100%;
+    min-height: 90px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--faint);
+    font-family: var(--mono);
+    letter-spacing: .5px;
+  }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a class="logo" href="#">
+    <div class="logo-icon">🎯</div>
+    Portfolio Review <span>AI</span>
+  </a>
+  <span class="header-tag">Powered by Claude AI</span>
+  <div class="header-right">
+    <button class="api-badge" id="apiBtn">⚙ Connect API Key</button>
+  </div>
+</header>
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay" id="apiModal">
+  <div class="modal">
+    <h3>🔑 Anthropic API Key</h3>
+    <p>Enter your Anthropic API key to enable AI-powered portfolio review. Your key is stored only in your browser's localStorage and never sent to any server other than Anthropic.</p>
+    <div class="field">
+      <label>API Key</label>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-..." />
+    </div>
+    <p class="api-note">🔒 Stored locally &nbsp;|&nbsp; Get your key at console.anthropic.com</p>
+    <div class="modal-btns">
+      <button class="btn-primary" id="saveApiKey">Save & Connect</button>
+      <button class="btn-secondary" id="closeModal">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <p class="sidebar-title">Portfolio Details</p>
+
+    <!-- Portfolio Type -->
+    <div class="field">
+      <label>What type of portfolio?</label>
+      <div class="type-chips" id="typeChips">
+        <button class="chip active" data-val="Developer">💻 Developer</button>
+        <button class="chip" data-val="Designer">🎨 Designer</button>
+        <button class="chip" data-val="Freelancer">⚡ Freelancer</button>
+        <button class="chip" data-val="CA/Finance">📊 CA/Finance</button>
+        <button class="chip" data-val="Writer">✍ Writer</button>
+        <button class="chip" data-val="Video/Media">🎬 Video/Media</button>
+      </div>
+    </div>
+
+    <!-- Portfolio URL -->
+    <div class="field">
+      <label>Portfolio URL (optional)</label>
+      <input type="text" id="portfolioUrl" placeholder="https://yourportfolio.com" />
+    </div>
+
+    <!-- Target Role -->
+    <div class="field">
+      <label>Target Job / Client Type</label>
+      <input type="text" id="targetRole" placeholder="e.g. Startup CTO, Indian CA firm, MNC..." />
+    </div>
+
+    <!-- Experience Level -->
+    <div class="field">
+      <label>Experience Level</label>
+      <select id="expLevel">
+        <option value="fresher">Fresher (0–1 yr)</option>
+        <option value="junior" selected>Junior (1–3 yrs)</option>
+        <option value="mid">Mid-level (3–6 yrs)</option>
+        <option value="senior">Senior (6+ yrs)</option>
+        <option value="expert">Expert / Niche</option>
+      </select>
+    </div>
+
+    <!-- Portfolio Description -->
+    <div class="field">
+      <label>Describe your portfolio / paste key content</label>
+      <textarea id="portfolioDesc" placeholder="Paste your bio, list your projects, skills, achievements, or describe what your portfolio currently includes..."></textarea>
+    </div>
+
+    <!-- File Upload -->
+    <div class="field">
+      <label>Upload Screenshots or PDF (optional)</label>
+      <label class="upload-zone" id="uploadZone">
+        <input type="file" id="fileInput" multiple accept=".pdf,image/*" />
+        <div class="upload-icon">📎</div>
+        <p class="upload-label"><strong>Click to upload</strong> or drag & drop</p>
+        <p class="upload-label" style="font-size:11px;margin-top:4px">PDF, PNG, JPG — max 10MB each</p>
+        <div class="file-list" id="fileList"></div>
+      </label>
+    </div>
+
+    <!-- Goals -->
+    <div class="field">
+      <label>Main Goal for Review</label>
+      <select id="reviewGoal">
+        <option value="get_clients">Get more freelance clients</option>
+        <option value="get_job">Land a full-time job</option>
+        <option value="increase_rates">Increase rates / pricing</option>
+        <option value="global_market">Break into global market</option>
+        <option value="impress_investors">Impress investors / partners</option>
+      </select>
+    </div>
+
+    <!-- AdSense Slot -->
+    <div class="ad-slot">[ AdSense — 728×90 ]</div>
+
+    <!-- Action Buttons -->
+    <button class="btn-review" id="reviewBtn">
+      🔍 Analyze Portfolio
+    </button>
+    <button class="btn-outline" id="clearBtn">↺ Clear & Start Over</button>
+  </aside>
+
+  <!-- MAIN PANEL -->
+  <main class="main" id="mainPanel">
+
+    <!-- EMPTY STATE -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-hero">🎯</div>
+      <h2>Your Portfolio,<br>Brutally Reviewed</h2>
+      <p>Get an AI-powered deep-dive into what's working, what's not, and exactly what to fix to win more clients or land your dream job.</p>
+      <div class="feature-pills">
+        <div class="feature-pill">📊 Skill Score Analysis</div>
+        <div class="feature-pill">💡 10+ Improvement Tips</div>
+        <div class="feature-pill">📈 Market Positioning</div>
+        <div class="feature-pill">🎯 Targeted Feedback</div>
+        <div class="feature-pill">💰 Earning Potential</div>
+      </div>
+    </div>
+
+    <!-- LOADING STATE -->
+    <div class="loading-wrap hidden" id="loadingState">
+      <div class="loading-ring"></div>
+      <div class="loading-steps">
+        <div class="loading-step" id="step1"><div class="step-dot"></div> Reading portfolio content</div>
+        <div class="loading-step" id="step2"><div class="step-dot"></div> Analyzing skills & positioning</div>
+        <div class="loading-step" id="step3"><div class="step-dot"></div> Scoring across key dimensions</div>
+        <div class="loading-step" id="step4"><div class="step-dot"></div> Generating improvement plan</div>
+        <div class="loading-step" id="step5"><div class="step-dot"></div> Finalizing your report</div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="resultsPanel" class="hidden" style="display:flex;flex-direction:column;gap:24px;">
+
+      <!-- Export Row -->
+      <div class="export-row" id="exportRow">
+        <button class="btn-export" id="copyBtn">📋 Copy Report</button>
+        <button class="btn-export" id="printBtn">🖨 Print / Save PDF</button>
+        <button class="btn-export" id="reAnalyzeBtn">🔄 Re-analyze</button>
+      </div>
+
+      <!-- Overall Score -->
+      <div class="card" id="overallCard">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(245,183,49,.15)">🏆</div>
+          <div>
+            <div class="card-title">Overall Portfolio Score</div>
+            <div class="card-sub">Evaluated against industry standards for your target market</div>
+          </div>
+        </div>
+        <div class="score-ring-wrap">
+          <div class="score-ring">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="50" fill="none" stroke="var(--faint)" stroke-width="10"/>
+              <circle id="ringCircle" cx="60" cy="60" r="50" fill="none" stroke="var(--gold)" stroke-width="10"
+                stroke-dasharray="314" stroke-dashoffset="314" stroke-linecap="round"
+                style="transition: stroke-dashoffset 1.5s cubic-bezier(.4,0,.2,1)"/>
+            </svg>
+            <div class="ring-label">
+              <span class="ring-num" id="ringNum">0</span>
+              <span class="ring-text">/ 100</span>
+            </div>
+          </div>
+          <div class="score-meta">
+            <div class="score-grade" id="scoreGrade">—</div>
+            <div class="score-verdict" id="scoreVerdict">Running analysis…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dimension Scores -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(56,189,248,.12)">📡</div>
+          <div>
+            <div class="card-title">Dimension Breakdown</div>
+            <div class="card-sub">Score across 6 key portfolio dimensions</div>
+          </div>
+        </div>
+        <div class="scores-row">
+          <canvas id="radar" width="220" height="220"></canvas>
+          <div class="score-bars" id="scoreBars"></div>
+        </div>
+      </div>
+
+      <!-- Highlights -->
+      <div class="card" id="highlightsCard">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(16,185,129,.12)">✨</div>
+          <div>
+            <div class="card-title">Key Findings</div>
+            <div class="card-sub">What stands out — good and bad</div>
+          </div>
+        </div>
+        <div class="highlights" id="highlightsList"></div>
+      </div>
+
+      <!-- Full Review -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(139,92,246,.12)">📝</div>
+          <div>
+            <div class="card-title">Detailed AI Review</div>
+            <div class="card-sub">In-depth analysis from your AI reviewer</div>
+          </div>
+        </div>
+        <div class="review-body" id="reviewBody"></div>
+      </div>
+
+      <!-- Suggestions -->
+      <div class="card" id="suggestionsCard">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(245,183,49,.12)">🚀</div>
+          <div>
+            <div class="card-title">Action Plan</div>
+            <div class="card-sub">Prioritized steps to improve your portfolio</div>
+          </div>
+        </div>
+        <div class="suggestion-list" id="suggestionList"></div>
+      </div>
+
+      <!-- Bottom Ad -->
+      <div class="ad-slot">[ AdSense — 728×90 ]</div>
+
+    </div><!-- /resultsPanel -->
+
+  </main>
+</div>
+
+<script>
+/* ─── STATE ───────────────────────────────────────────────────── */
+let apiKey = localStorage.getItem('pr_api_key') || '';
+let portfolioType = 'Developer';
+let uploadedFiles = [];
+let currentReport = null;
+
+/* ─── API KEY UI ──────────────────────────────────────────────── */
+const apiModal = document.getElementById('apiModal');
+const apiBtn   = document.getElementById('apiBtn');
+const apiKeyInput = document.getElementById('apiKeyInput');
+
+function updateApiBadge() {
+  if (apiKey) {
+    apiBtn.textContent = '✓ API Connected';
+    apiBtn.classList.add('connected');
+  } else {
+    apiBtn.textContent = '⚙ Connect API Key';
+    apiBtn.classList.remove('connected');
+  }
+}
+updateApiBadge();
+
+apiBtn.addEventListener('click', () => {
+  apiKeyInput.value = apiKey;
+  apiModal.classList.add('show');
+});
+document.getElementById('closeModal').addEventListener('click', () => apiModal.classList.remove('show'));
+apiModal.addEventListener('click', e => { if (e.target === apiModal) apiModal.classList.remove('show'); });
+
+document.getElementById('saveApiKey').addEventListener('click', () => {
+  const val = apiKeyInput.value.trim();
+  if (!val) { showToast('⚠ Please enter a valid API key'); return; }
+  apiKey = val;
+  localStorage.setItem('pr_api_key', apiKey);
+  updateApiBadge();
+  apiModal.classList.remove('show');
+  showToast('✅ API key saved!');
+});
+
+/* ─── TYPE CHIPS ──────────────────────────────────────────────── */
+document.querySelectorAll('#typeChips .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#typeChips .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    portfolioType = chip.dataset.val;
+  });
+});
+
+/* ─── FILE UPLOAD ─────────────────────────────────────────────── */
+const uploadZone = document.getElementById('uploadZone');
+const fileInput  = document.getElementById('fileInput');
+const fileList   = document.getElementById('fileList');
+
+fileInput.addEventListener('change', handleFiles);
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag');
+  handleFileDrop(e.dataTransfer.files);
+});
+
+function handleFiles(e) { addFiles(e.target.files); }
+function handleFileDrop(files) { addFiles(files); }
+
+function addFiles(files) {
+  Array.from(files).forEach(f => {
+    if (uploadedFiles.find(x => x.name === f.name)) return;
+    if (f.size > 10 * 1024 * 1024) { showToast(`⚠ ${f.name} exceeds 10MB`); return; }
+    uploadedFiles.push(f);
+  });
+  renderFileList();
+}
+
+function renderFileList() {
+  fileList.innerHTML = '';
+  uploadedFiles.forEach((f, i) => {
+    const el = document.createElement('div');
+    el.className = 'file-item';
+    el.innerHTML = `<span>📄 ${f.name}</span><button onclick="removeFile(${i})">✕</button>`;
+    fileList.appendChild(el);
+  });
+}
+
+function removeFile(i) {
+  uploadedFiles.splice(i, 1);
+  renderFileList();
+}
+
+/* ─── CLEAR ───────────────────────────────────────────────────── */
+document.getElementById('clearBtn').addEventListener('click', () => {
+  document.getElementById('portfolioUrl').value = '';
+  document.getElementById('targetRole').value = '';
+  document.getElementById('portfolioDesc').value = '';
+  uploadedFiles = [];
+  renderFileList();
+  showEmpty();
+  currentReport = null;
+});
+
+/* ─── TOAST ───────────────────────────────────────────────────── */
+function showToast(msg, dur = 3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+/* ─── PANEL TOGGLE ────────────────────────────────────────────── */
+function showEmpty()   { document.getElementById('emptyState').classList.remove('hidden'); document.getElementById('loadingState').classList.add('hidden'); document.getElementById('resultsPanel').classList.add('hidden'); }
+function showLoading() { document.getElementById('emptyState').classList.add('hidden');   document.getElementById('loadingState').classList.remove('hidden'); document.getElementById('resultsPanel').classList.add('hidden'); }
+function showResults() { document.getElementById('emptyState').classList.add('hidden');   document.getElementById('loadingState').classList.add('hidden');   document.getElementById('resultsPanel').classList.remove('hidden'); document.getElementById('resultsPanel').style.display = 'flex'; }
+
+/* ─── LOADING STEPS ───────────────────────────────────────────── */
+let stepTimer = null;
+function animateSteps() {
+  const steps = ['step1','step2','step3','step4','step5'];
+  let i = 0;
+  steps.forEach(id => document.getElementById(id).className = 'loading-step');
+  stepTimer = setInterval(() => {
+    if (i > 0) document.getElementById(steps[i-1]).className = 'loading-step done';
+    if (i < steps.length) {
+      document.getElementById(steps[i]).className = 'loading-step active';
+      i++;
+    } else {
+      clearInterval(stepTimer);
+    }
+  }, 900);
+}
+
+/* ─── RADAR CHART ─────────────────────────────────────────────── */
+function drawRadar(scores) {
+  const canvas = document.getElementById('radar');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2, r = 80;
+  const labels = ['Design','Content','Skills','Projects','Social Proof','UX/Nav'];
+  const n = labels.length;
+  const angleStep = (2 * Math.PI) / n;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid rings
+  for (let ring = 1; ring <= 5; ring++) {
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const a = i * angleStep - Math.PI/2;
+      const x = cx + (r * ring / 5) * Math.cos(a);
+      const y = cy + (r * ring / 5) * Math.sin(a);
+      i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Spokes
+  for (let i = 0; i < n; i++) {
+    const a = i * angleStep - Math.PI/2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.stroke();
+  }
+
+  // Data polygon
+  ctx.beginPath();
+  scores.forEach((s, i) => {
+    const a = i * angleStep - Math.PI/2;
+    const sr = (s / 100) * r;
+    const x = cx + sr * Math.cos(a);
+    const y = cy + sr * Math.sin(a);
+    i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(245,183,49,0.18)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(245,183,49,0.7)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Dots
+  scores.forEach((s, i) => {
+    const a = i * angleStep - Math.PI/2;
+    const sr = (s / 100) * r;
+    const x = cx + sr * Math.cos(a);
+    const y = cy + sr * Math.sin(a);
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, 2*Math.PI);
+    ctx.fillStyle = '#F5B731';
+    ctx.fill();
+  });
+
+  // Labels
+  ctx.font = '500 11px DM Sans, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  labels.forEach((lbl, i) => {
+    const a = i * angleStep - Math.PI/2;
+    const lx = cx + (r + 18) * Math.cos(a);
+    const ly = cy + (r + 18) * Math.sin(a);
+    ctx.fillStyle = '#8896a4';
+    ctx.fillText(lbl, lx, ly);
+  });
+}
+
+/* ─── SCORE BARS ──────────────────────────────────────────────── */
+const DIM_LABELS = ['Design & Visual','Content Quality','Skills Showcase','Projects/Work','Social Proof','UX / Navigation'];
+const DIM_COLORS = ['#F5B731','#10B981','#38BDF8','#8B5CF6','#F43F5E','#F97316'];
+
+function renderScoreBars(scores) {
+  const container = document.getElementById('scoreBars');
+  container.innerHTML = '';
+  DIM_LABELS.forEach((lbl, i) => {
+    const s = scores[i];
+    const el = document.createElement('div');
+    el.className = 'score-bar-item';
+    el.innerHTML = `
+      <div class="score-bar-header">
+        <span class="score-bar-label">${lbl}</span>
+        <span class="score-bar-val" style="color:${DIM_COLORS[i]}">${s}/100</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="background:${DIM_COLORS[i]}" data-target="${s}"></div>
+      </div>`;
+    container.appendChild(el);
+  });
+  // Animate bars
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.bar-fill').forEach(el => {
+      el.style.width = el.dataset.target + '%';
+    });
+  });
+}
+
+/* ─── RING ANIMATION ──────────────────────────────────────────── */
+function animateRing(score) {
+  const circ = 2 * Math.PI * 50;
+  const offset = circ - (score / 100) * circ;
+  const circle = document.getElementById('ringCircle');
+  const numEl  = document.getElementById('ringNum');
+  circle.style.strokeDashoffset = offset;
+
+  let current = 0;
+  const interval = setInterval(() => {
+    current = Math.min(current + 2, score);
+    numEl.textContent = current;
+    if (current >= score) clearInterval(interval);
+  }, 20);
+
+  // Color by score
+  const col = score >= 75 ? '#10B981' : score >= 50 ? '#F5B731' : '#F43F5E';
+  circle.style.stroke = col;
+  numEl.style.color = col;
+
+  const grade = score >= 90 ? '⭐ Exceptional' : score >= 75 ? '✅ Strong' : score >= 60 ? '🟡 Good' : score >= 45 ? '⚠ Needs Work' : '🔴 Critical Issues';
+  document.getElementById('scoreGrade').textContent = grade;
+  document.getElementById('scoreGrade').style.color = col;
+}
+
+/* ─── HIGHLIGHTS ──────────────────────────────────────────────── */
+function renderHighlights(items) {
+  const list = document.getElementById('highlightsList');
+  list.innerHTML = '';
+  items.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'highlight-item';
+    const color = item.type === 'positive' ? '#10B981' : item.type === 'negative' ? '#F43F5E' : '#F5B731';
+    el.innerHTML = `<div class="hi-dot" style="background:${color}"></div><div class="hi-text">${item.text}</div>`;
+    list.appendChild(el);
+  });
+}
+
+/* ─── SUGGESTIONS ─────────────────────────────────────────────── */
+function renderSuggestions(items) {
+  const list = document.getElementById('suggestionList');
+  list.innerHTML = '';
+  const priorityColors = { high: '#F43F5E', medium: '#F5B731', low: '#10B981' };
+  items.forEach((item, i) => {
+    const el = document.createElement('div');
+    el.className = 'suggestion-item';
+    const pColor = priorityColors[item.priority] || '#F5B731';
+    el.innerHTML = `
+      <div class="suggestion-num">#${String(i+1).padStart(2,'0')}</div>
+      <div>
+        <div style="margin-bottom:5px">
+          <span class="suggestion-tag" style="background:${pColor}22;color:${pColor};border:1px solid ${pColor}44">${(item.priority||'medium').toUpperCase()}</span>
+          <span class="suggestion-tag" style="background:rgba(139,92,246,.15);color:#8B5CF6;border:1px solid rgba(139,92,246,.3)">${item.area||'General'}</span>
+        </div>
+        <div class="suggestion-text">${item.text}</div>
+      </div>`;
+    list.appendChild(el);
+  });
+}
+
+/* ─── STREAMING REVIEW ────────────────────────────────────────── */
+function streamReview(text) {
+  const el = document.getElementById('reviewBody');
+  el.innerHTML = '';
+  let i = 0;
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  el.appendChild(cursor);
+
+  const interval = setInterval(() => {
+    if (i >= text.length) {
+      clearInterval(interval);
+      cursor.remove();
+      el.innerHTML = markdownToHtml(text);
+      return;
+    }
+    const chunk = text.slice(0, i + 3);
+    el.innerHTML = markdownToHtml(chunk);
+    el.appendChild(cursor);
+    i += 3;
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 18);
+}
+
+function markdownToHtml(md) {
+  return md
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g, s => `<ul>${s}</ul>`)
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/^(?!<[hup])(.+)$/gm, '<p>$1</p>')
+    .replace(/<p><\/p>/g, '');
+}
+
+/* ─── MAIN REVIEW FUNCTION ────────────────────────────────────── */
+document.getElementById('reviewBtn').addEventListener('click', runReview);
+document.getElementById('reAnalyzeBtn').addEventListener('click', runReview);
+
+async function runReview() {
+  const desc    = document.getElementById('portfolioDesc').value.trim();
+  const url     = document.getElementById('portfolioUrl').value.trim();
+  const target  = document.getElementById('targetRole').value.trim();
+  const expLvl  = document.getElementById('expLevel').value;
+  const goal    = document.getElementById('reviewGoal').value;
+
+  if (!desc && !url && uploadedFiles.length === 0) {
+    showToast('⚠ Please describe your portfolio or paste content first');
+    return;
+  }
+
+  if (!apiKey) {
+    apiModal.classList.add('show');
+    showToast('⚠ Please connect your API key first');
+    return;
+  }
+
+  document.getElementById('reviewBtn').disabled = true;
+  showLoading();
+  animateSteps();
+
+  const goalMap = {
+    get_clients: 'getting more freelance clients',
+    get_job: 'landing a full-time job',
+    increase_rates: 'increasing rates/pricing',
+    global_market: 'breaking into the global market',
+    impress_investors: 'impressing investors and partners'
+  };
+
+  const prompt = `You are an expert portfolio coach and career strategist with 15+ years of experience reviewing portfolios for ${portfolioType} professionals in the Indian and global market.
+
+Review this ${portfolioType} portfolio. The person's goal is ${goalMap[goal]}, targeting: "${target || 'general clients/employers'}", experience level: ${expLvl}.
+
+Portfolio URL: ${url || 'Not provided'}
+Portfolio Content / Description:
+${desc || 'Not provided (images/files attached)'}
+
+Provide a thorough, honest, and actionable review. Be specific, not generic.
+
+Respond ONLY with a valid JSON object (no markdown fences) with this exact structure:
+{
+  "overallScore": <number 0-100>,
+  "verdict": "<2-sentence summary of the portfolio's current standing>",
+  "dimensionScores": {
+    "design": <0-100>,
+    "content": <0-100>,
+    "skills": <0-100>,
+    "projects": <0-100>,
+    "socialProof": <0-100>,
+    "ux": <0-100>
+  },
+  "highlights": [
+    {"type": "positive", "text": "..."},
+    {"type": "negative", "text": "..."},
+    {"type": "neutral", "text": "..."}
+  ],
+  "detailedReview": "<markdown formatted detailed review with ### headings, covering: First Impressions, Strengths, Critical Weaknesses, Market Positioning, and Earning Potential. Be specific and honest. Min 400 words.>",
+  "actionPlan": [
+    {"priority": "high", "area": "Design", "text": "specific actionable step"},
+    {"priority": "high", "area": "Content", "text": "..."},
+    {"priority": "medium", "area": "Projects", "text": "..."},
+    {"priority": "medium", "area": "Social Proof", "text": "..."},
+    {"priority": "low", "area": "UX", "text": "..."}
+  ]
+}
+
+Include at least 5 highlights (mix of positive, negative, neutral) and 8-10 action plan items.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || `API error ${res.status}`);
+    }
+
+    const data = await res.json();
+    const raw  = data.content[0]?.text || '{}';
+    let report;
+    try {
+      report = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    } catch {
+      throw new Error('Failed to parse AI response. Please try again.');
+    }
+
+    clearInterval(stepTimer);
+    currentReport = report;
+    renderReport(report);
+
+  } catch (err) {
+    clearInterval(stepTimer);
+    showEmpty();
+    showToast('❌ ' + (err.message || 'Something went wrong. Check your API key.'), 5000);
+    console.error(err);
+  } finally {
+    document.getElementById('reviewBtn').disabled = false;
+  }
+}
+
+function renderReport(r) {
+  // Scores
+  const dims = r.dimensionScores || {};
+  const scores = [
+    dims.design     || 50,
+    dims.content    || 50,
+    dims.skills     || 50,
+    dims.projects   || 50,
+    dims.socialProof || 50,
+    dims.ux         || 50
+  ];
+
+  showResults();
+
+  // Animate all
+  setTimeout(() => {
+    animateRing(r.overallScore || 50);
+    document.getElementById('scoreVerdict').textContent = r.verdict || '';
+    drawRadar(scores);
+    renderScoreBars(scores);
+    renderHighlights(r.highlights || []);
+    streamReview(r.detailedReview || 'No detailed review available.');
+    renderSuggestions(r.actionPlan || []);
+  }, 100);
+
+  document.getElementById('mainPanel').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ─── EXPORT ──────────────────────────────────────────────────── */
+document.getElementById('copyBtn').addEventListener('click', () => {
+  if (!currentReport) return;
+  const text = `PORTFOLIO REVIEW REPORT\n\nOverall Score: ${currentReport.overallScore}/100\n\n${currentReport.verdict}\n\nDetailed Review:\n${currentReport.detailedReview}\n\nAction Plan:\n${(currentReport.actionPlan||[]).map((a,i)=>`${i+1}. [${a.priority}] ${a.text}`).join('\n')}`;
+  navigator.clipboard.writeText(text).then(() => showToast('📋 Report copied!'));
+});
+
+document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+/* ─── DEMO / MOCK (if no API key) ────────────────────────────── */
+// Auto-demo on first visit
+window.addEventListener('DOMContentLoaded', () => {
+  if (!apiKey) {
+    setTimeout(() => showToast('👋 Connect your Anthropic API key to get started!', 4000), 1200);
+  }
+});
+</script>
+</body>
+</html>
